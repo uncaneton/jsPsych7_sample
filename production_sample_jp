@@ -1,0 +1,119 @@
+/* jspsychの冒頭。ここは必須です！
+中のプログレスバーなどの指定は必須ではありません。
+on_finishは実験が終了したあとのアクションを指定するとこです。
+今のものでは実験が終了したらデータ(.json形式)を表示します。
+ほかのリンクにリダイレクトすることもできます（Google Formsなどと併用すると便利なときもあります）
+*/
+
+var jsPsych = initJsPsych({
+  show_progress_bar: true,
+  message_progress_bar: '実験終了まで',
+  auto_update_progress_bar: true, 
+      on_finish: function() {
+        jsPsych.data.displayData();
+      }
+    });
+
+
+/* ここからはいくつかの種類のプラグインを入れています。
+実験の目的によって変えましょう
+*/
+const hello = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: "このトライアルはキーボードを押して進めてもらうものです。<br>（キーボードのスペースを押して続けてください）"
+};
+
+const form_name = {
+ type: jsPsychSurveyHtmlForm,
+ preamble: "このトライアルは文字列などを入力してもらうものです。",
+ html: '<p> <input name="first" type="text" />',
+};
+
+const area = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: "<p>このトライアルはボタンを選んでもらうものです</p>",
+  choices:['選択肢１','選択肢２','選択肢３'],
+  response_ends_trial: true,
+};
+
+// 以下、録音に関するセッションです。まず下のトライアルはマイクを許可してもらうためのものです
+// これがないと録音課題が実行できないので注意しましょう。
+
+const initialize_mic = {
+    type: jsPsychInitializeMicrophone,
+    device_select_message: "これは実験参加者にマイクを許可してもらうためのトライアルです。メッセージは必須ではありません。",
+    button_label: "次へ",
+};
+
+// こちらでアイテムのリストを作っておきます。アイテムの情報も一緒に入れると分析するときにはそのまま使えて便利です。
+
+const item_list = [
+{stimulus: `<p>おら青森さ行くだ</p>`, data:{type:"item", lang:"tohoku"}},
+{stimulus: `<p>明日は友達の結婚式だ</p>`, data:{type:"item", lang:"neutral"}},
+];
+
+/* このトライアルは先ほどのボタンのトライアルと同じ種類です。まず録音するものを被験者に見せて、心の準備をしてもらいます。
+ stimulusのところで、"発音してもらいたい文"を書いても問題ないです。
+ ただ複数のアイテムがある場合はjsPsychHtmlButtonResponseなどをいちいち書かないといけないので、
+ このスクリプトでは上のリストを作って、リストにあるものを順番通りに読み込んでもらうことにします。
+ アイテムを調整する場合は上のlistの中身を編集すれば問題ありません。
+*/
+
+const pre_question = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: jsPsych.timelineVariable('stimulus'),
+    choices: ['クリックして録音を始めてください']
+};
+
+
+/* こちらは録音するトライアルです。上と同じくstimulusのところで文字列を入れると実行できますが、
+こちらではリストを読み込んでもらって順次に呈示するやりかたです。
+レコーディングの最大時間も調整できます。刺激とともに記入するアイテムの詳細はdataの部分です。
+また、allow_playbackのところをfalseにすると録音を確認する画面をなくせます。（最後の二行は録音の確認の選択肢です）
+*/
+
+const pre_record = {
+    type: jsPsychHtmlAudioResponse,
+    stimulus: jsPsych.timelineVariable('stimulus'),
+    data: jsPsych.timelineVariable('data'),
+    recording_duration: 10000,
+    allow_playback: true,
+    done_button_label: "録音を終わりました",
+    accept_button_label: "OK！次の問題へ",
+    record_again_button_label: "もう一度録音する"
+};
+
+
+/* 上のpre_questionとpre_recordは、すべてのアイテムに適用したいので、
+下のtimelineを指定します。
+*/
+const tutorial_all = {
+  timeline: [pre_question, pre_record],　// timelineの中身
+  timeline_variables: item_list,　//読み込むリスト。上のアイテムのリストを指定
+};
+
+// 最後のメッセージ。これは上のHtmlButtonResponseと同じ構造なので省略
+
+var end = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: '<p>ご回答ありがとうございます。</p>',
+    choices: ['確認'],
+    response_ends_trial: true,
+};
+
+
+/* 実行の順番。実行するものは必ず入れてください。
+こちらのものは、冒頭のものと同じく必須となります。
+改行しなくてもいいですが、このように書くとデバッグなどのときに、実行したくない行の前にスラッシュを入れればよくて便利です）
+なお、jspsychのver.6（古いバージョン）では書き方が大きく違うので、
+7以上のバージョンを使用する必要があります。
+*/
+
+jsPsych.run([
+  hello,
+  form_name,
+  area,
+  initialize_mic, 
+  tutorial_all,
+  end,
+]);
