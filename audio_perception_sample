@@ -1,0 +1,76 @@
+/* jspsychの冒頭。ここは必須です！
+中のプログレスバーなどの指定は必須ではありません。
+on_finishは実験が終了したあとのアクションを指定するとこです。
+今のものでは実験が終了したらデータ(.json形式)を表示します。
+ほかのリンクにリダイレクトすることもできます（Google Formsなどと併用すると便利なときもあります）
+*/
+
+var jsPsych = initJsPsych({
+  show_progress_bar: true,
+  message_progress_bar: '実験終了まで',
+  auto_update_progress_bar: true, 
+      on_finish: function() {
+        jsPsych.data.displayData();
+      }
+    });
+
+
+/* ここからはいくつかの種類のプラグインを入れています。
+実験の目的によって変えましょう
+*/
+const hello = {
+  type: jsPsychHtmlKeyboardResponse,
+  stimulus: "このトライアルはキーボードを押して進めてもらうものです。<br>（キーボードのスペースを押して続けてください）"
+};
+
+const form_name = {
+ type: jsPsychSurveyHtmlForm,
+ preamble: "このトライアルは文字列などを入力してもらうものです。",
+ html: '<p> <input name="first" type="text" />',
+};
+
+const area = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: "<p>このトライアルはボタンを選んでもらうものです</p>",
+  choices:['選択肢１','選択肢２','選択肢３'],
+  response_ends_trial: true,
+};
+
+// 以下、音声の提示をして回答をしてもらうセッションです。
+//　音声ファイルの用意と下のコードでファイル名を指定することが必須です
+
+var audio = {
+  timeline:[{
+  type: jsPsychAudioButtonResponse,
+  stimulus: "audio/ここに音声ファイルのファイルを指定", 
+  prompt: "最後の音声はどちらの音声と同じですか",
+  choices: ['<h3>A</h3>', '<h3>B</h3>'],
+  margin_horizontal: '30px',
+  response_allowed_while_playing: false,
+  }],
+};
+
+// 最後のメッセージ。これは上のHtmlButtonResponseと同じ構造なので省略
+
+var end = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: '<p>ご回答ありがとうございます。</p>',
+    choices: ['確認'],
+    response_ends_trial: true,
+};
+
+
+/* 実行の順番。実行するものは必ず入れてください。
+こちらのものは、冒頭のものと同じく必須となります。
+改行しなくてもいいですが、このように書くとデバッグなどのときに、実行したくない行の前にスラッシュを入れればよくて便利です）
+なお、jspsychのver.6（古いバージョン）では書き方が大きく違うので、
+7以上のバージョンを使用する必要があります。
+*/
+
+jsPsych.run([
+  hello,
+  form_name,
+  area,
+  audio,
+  end,
+]);
