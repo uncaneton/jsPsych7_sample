@@ -1,0 +1,32 @@
+
+var loopCount = 0;
+
+var conditional = {
+  timeline:[{
+    type: jsPsychAudioButtonResponse,
+    choices: ,
+    response_allowed_while_playing: false,
+    prompt: "<br>一個目の単語はどちらですか",
+    data: ,
+    stimulus: ,
+     on_finish: function(data){
+      var answer = data.correct_button;
+      if (data.response == answer){
+        data.correct = 1;
+      } else {
+        data.correct = 0;
+      };
+      
+      data.playingTime = loopCount;
+    },
+
+}],
+loop_function: function(data){
+    if(data.values()[0].response == 2){
+      loopCount++;
+        return true; // loop again!
+    } else {
+        return false; // continue
+    }
+  }
+};
